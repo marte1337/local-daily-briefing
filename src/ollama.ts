@@ -14,6 +14,9 @@ export async function summarizeWithOllama(model: string, prompt: string, onToken
             prompt,
             stream: true,
             think: false,
+            options: {
+                temperature: 0.1,
+            },
         });
 
         // http.request necessary, fetch() timed out on larger models

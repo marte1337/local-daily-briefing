@@ -8,16 +8,27 @@ export type OtherFileChange = {
     paths: string[];
 };
 
+export type FileChangeStat = {
+    path: string;
+    additions: number | null;
+    deletions: number | null;
+};
+
 export type GitCommit = {
     hash: string;
     author: string;
     date: string;
     message: string;
+    body: string;
 
     addedFiles: string[];
     modifiedFiles: string[];
     deletedFiles: string[];
     renamedFiles: RenamedFile[];
+    fileStats: FileChangeStat[];
+    filesChanged: number;
+    additions: number | null;
+    deletions: number | null;
 
     // Keeps unusual Git statuses without throwing information away.
     otherChanges: OtherFileChange[];
