@@ -1,12 +1,16 @@
-import type { GitSummary } from "./types.js";
+import type { GitSummary, WeatherSummary } from "./types.js";
 
-export function buildGitBriefingPrompt(summary: GitSummary): string {
+export function buildDailyBriefingPrompt(gitSummary: GitSummary, weatherSummary: WeatherSummary): string {
     return `
-You are preparing a concise developer morning briefing from structured Git repository data.
+You are preparing a concise developer morning briefing from structured Git repository data and structured weather data.
 
-Summarize the repository activity supplied below.
+Produce exactly these two sections in this order:
 
-Rules:
+## Project
+
+## Weather — Bremen
+
+Project grounding rules:
 - Only use information directly supported by the supplied Git data.
 - Treat each commit as an independent evidence unit.
 - When describing a specific commit, only use its message, body, file lists, fileStats, and supplied totals as evidence.
@@ -48,8 +52,29 @@ Rules:
 - Do not invent shortened, alternative, or normalized file paths.
 - Do not include a separate raw commit list unless it adds useful information beyond the summary.
 
+Weather grounding rules:
+- Treat the supplied weather values as authoritative.
+- Do not invent weather values.
+- Do not calculate additional meteorological values.
+- Do not change temperatures, wind speeds, or precipitation probabilities.
+- Temperature values are in degrees Celsius, wind speed is in kilometers per hour, and precipitation probability is a percentage.
+- Do not infer an exact time for rain or thunderstorms because the supplied data does not contain hourly timing.
+- Do not claim that rain or a thunderstorm will definitely occur solely from precipitation probability.
+- Distinguish current conditions from today's overall forecast.
+- "currentCondition" describes current conditions.
+- "today.condition" describes the day's overall weather condition.
+- "today.precipitationProbability" is the maximum precipitation probability for the day.
+- Do not confuse precipitation probability with expected rainfall amount.
+- Keep the weather summary concise and practical.
+- A simple interpretation such as "there is a high chance of precipitation" is acceptable when supported by the supplied probability.
+- Do not add detailed safety advice, recommendations, or unsupported predictions.
+
 Structured Git data:
 
-${JSON.stringify(summary, null, 2)}
+${JSON.stringify(gitSummary, null, 2)}
+
+Structured weather data:
+
+${JSON.stringify(weatherSummary, null, 2)}
 `;
 }

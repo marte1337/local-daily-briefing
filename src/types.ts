@@ -42,3 +42,17 @@ export type GitSummary = {
     unstagedDiff: string;
     stagedDiff: string;
 };
+
+export type WeatherSummary = {
+    location: string;
+    currentTemperature: number;
+    apparentTemperature: number;
+    currentCondition: string;
+    windSpeed: number;
+    today: {
+        minTemperature: number;
+        maxTemperature: number;
+        precipitationProbability: number;
+        condition: string;
+    };
+};

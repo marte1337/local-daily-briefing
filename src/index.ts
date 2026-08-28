@@ -1,6 +1,7 @@
 import { getGitSummary } from "./git.js";
 import { summarizeWithOllama } from "./ollama.js";
-import { buildGitBriefingPrompt } from "./prompt.js";
+import { buildDailyBriefingPrompt } from "./prompt.js";
+import { getWeatherSummary } from "./weather.js";
 
 async function main() {
     const repoPath = process.argv[2];
@@ -18,9 +19,14 @@ async function main() {
     console.log("\n=== Structured Git Data ===\n");
     console.log(JSON.stringify(gitSummary, null, 2));
 
-    const prompt = buildGitBriefingPrompt(gitSummary);
+    const weatherSummary = await getWeatherSummary();
 
-    console.log("\n=== AI Git Briefing ===\n");
+    console.log("\n=== Structured Weather Data ===\n");
+    console.log(JSON.stringify(weatherSummary, null, 2));
+
+    const prompt = buildDailyBriefingPrompt(gitSummary, weatherSummary);
+
+    console.log("\n=== AI Daily Briefing ===\n");
 
     const briefing = await summarizeWithOllama(model, prompt, (token) => process.stdout.write(token));
 
