@@ -40,41 +40,19 @@ export async function getAiNews(): Promise<NewsItem[]> {
             return;
         }
 
+        const summaryText = normalizeText($(element).nextAll("span").first().text());
+
+        const summary = summaryText || null;
+
         items.push({
             title,
             source: "TLDR AI",
             url: cleanTldrUrl(href),
             publishedAt: getTldrIssueDate(issueUrl),
-            summary: null,
+            summary,
             section: currentSection,
         });
     });
 
     return deduplicateNews(items).slice(0, 10);
-}
-
-export async function inspectTldrArticleStructure(): Promise<void> {
-    const issueUrl = await getLatestTldrIssueUrl();
-    const html = await fetchHtml(issueUrl);
-    const $ = cheerio.load(html);
-
-    const articleLink = $("a[href]")
-        .filter((_, element) => {
-            const text = normalizeText($(element).text());
-
-            return text.includes("Anthropic's Model Hardware Standard");
-        })
-        .first();
-
-    if (articleLink.length === 0) {
-        throw new Error("Could not find example TLDR article.");
-    }
-
-    console.log("\n=== TLDR Article Structure ===\n");
-
-    console.log(articleLink.parent().text().replace(/\s+/g, " ").trim());
-
-    console.log("\n--- Parent HTML ---\n");
-
-    console.log(articleLink.parent().html());
 }

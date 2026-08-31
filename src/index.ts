@@ -3,7 +3,6 @@ import { getWeatherSummary } from "./weather.js";
 import { getNews } from "./news/index.js";
 import { summarizeWithOllama } from "./ollama.js";
 import { buildDailyBriefingPrompt } from "./prompt.js";
-import { inspectTldrArticleStructure } from "./news/tldr-ai.js";
 
 async function main() {
     const repoPath = process.argv[2];
@@ -26,8 +25,6 @@ async function main() {
 
     console.log("\n=== Structured News Data ===\n");
     console.log(JSON.stringify(newsSummary, null, 2));
-
-    await inspectTldrArticleStructure();
 
     // const prompt = buildDailyBriefingPrompt(gitSummary, weatherSummary, newsSummary);
 
