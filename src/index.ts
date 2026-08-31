@@ -1,8 +1,9 @@
 import { getGitSummary } from "./git.js";
+import { getWeatherSummary } from "./weather.js";
+import { getNews } from "./news/index.js";
 import { summarizeWithOllama } from "./ollama.js";
 import { buildDailyBriefingPrompt } from "./prompt.js";
-import { getWeatherSummary } from "./weather.js";
-import { getNews, getLatestTldrIssueUrl } from "./news.js";
+import { inspectTldrArticleStructure } from "./news/tldr-ai.js";
 
 async function main() {
     const repoPath = process.argv[2];
@@ -15,36 +16,29 @@ async function main() {
     console.log(`Collecting Git activity from: ${repoPath}`);
     console.log(`Model: ${model}`);
 
-    const gitSummary = await getGitSummary(repoPath, "7 days ago");
+    const [gitSummary, weatherSummary, newsSummary] = await Promise.all([getGitSummary(repoPath, "7 days ago"), getWeatherSummary(), getNews()]);
 
     console.log("\n=== Structured Git Data ===\n");
     console.log(JSON.stringify(gitSummary, null, 2));
 
-    const weatherSummary = await getWeatherSummary();
-
     console.log("\n=== Structured Weather Data ===\n");
     console.log(JSON.stringify(weatherSummary, null, 2));
 
-    const news = await getNews();
-
     console.log("\n=== Structured News Data ===\n");
-    console.log(JSON.stringify(news, null, 2));
+    console.log(JSON.stringify(newsSummary, null, 2));
 
-    const tldrUrl = await getLatestTldrIssueUrl();
+    await inspectTldrArticleStructure();
 
-    console.log("\n=== Latest TLDR AI Issue ===\n");
-    console.log(tldrUrl);
+    // const prompt = buildDailyBriefingPrompt(gitSummary, weatherSummary, newsSummary);
 
-    const prompt = buildDailyBriefingPrompt(gitSummary, weatherSummary);
+    // console.log("\n=== AI Daily Briefing ===\n");
 
-    console.log("\n=== AI Daily Briefing ===\n");
+    // const briefing = await summarizeWithOllama(model, prompt, (token) => process.stdout.write(token));
 
-    const briefing = await summarizeWithOllama(model, prompt, (token) => process.stdout.write(token));
+    // console.log();
 
-    console.log();
-
-    // Prepare email output
-    void briefing;
+    // // Later we'll use this for email delivery.
+    // void briefing;
 }
 
 main().catch((error) => {

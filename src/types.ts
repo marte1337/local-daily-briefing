@@ -56,3 +56,17 @@ export type WeatherSummary = {
         condition: string;
     };
 };
+
+export type NewsItem = {
+    title: string;
+    source: string;
+    url: string;
+    publishedAt: string | null;
+    summary: string | null;
+    section?: string;
+};
+
+export type NewsSummary = {
+    general: NewsItem[];
+    ai: NewsItem[];
+};

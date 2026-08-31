@@ -1,6 +1,6 @@
-import type { GitSummary, WeatherSummary } from "./types.js";
+import type { GitSummary, WeatherSummary, NewsSummary } from "./types.js";
 
-export function buildDailyBriefingPrompt(gitSummary: GitSummary, weatherSummary: WeatherSummary): string {
+export function buildDailyBriefingPrompt(gitSummary: GitSummary, weatherSummary: WeatherSummary, newsSummary: NewsSummary): string {
     return `
 You are preparing a concise developer morning briefing from structured Git repository data and structured weather data.
 
