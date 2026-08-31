@@ -2,7 +2,7 @@ import { getGitSummary } from "./git.js";
 import { summarizeWithOllama } from "./ollama.js";
 import { buildDailyBriefingPrompt } from "./prompt.js";
 import { getWeatherSummary } from "./weather.js";
-import { getNews } from "./news.js";
+import { getNews, getLatestTldrIssueUrl } from "./news.js";
 
 async function main() {
     const repoPath = process.argv[2];
@@ -29,6 +29,11 @@ async function main() {
 
     console.log("\n=== Structured News Data ===\n");
     console.log(JSON.stringify(news, null, 2));
+
+    const tldrUrl = await getLatestTldrIssueUrl();
+
+    console.log("\n=== Latest TLDR AI Issue ===\n");
+    console.log(tldrUrl);
 
     const prompt = buildDailyBriefingPrompt(gitSummary, weatherSummary);
 
