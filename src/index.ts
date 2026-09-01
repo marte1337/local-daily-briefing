@@ -26,16 +26,16 @@ async function main() {
     console.log("\n=== Structured News Data ===\n");
     console.log(JSON.stringify(newsSummary, null, 2));
 
-    // const prompt = buildDailyBriefingPrompt(gitSummary, weatherSummary, newsSummary);
+    const prompt = buildDailyBriefingPrompt(gitSummary, weatherSummary, newsSummary);
 
-    // console.log("\n=== AI Daily Briefing ===\n");
+    console.log("\n=== AI Daily Briefing ===\n");
 
-    // const briefing = await summarizeWithOllama(model, prompt, (token) => process.stdout.write(token));
+    const briefing = await summarizeWithOllama(model, prompt, (token) => process.stdout.write(token));
 
-    // console.log();
+    console.log();
 
-    // // Later we'll use this for email delivery.
-    // void briefing;
+    // Later we'll use this for email delivery.
+    void briefing;
 }
 
 main().catch((error) => {

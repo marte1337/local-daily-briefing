@@ -1,80 +1,84 @@
-import type { GitSummary, WeatherSummary, NewsSummary } from "./types.js";
+import type { GitSummary, NewsSummary, WeatherSummary } from "./types.js";
 
 export function buildDailyBriefingPrompt(gitSummary: GitSummary, weatherSummary: WeatherSummary, newsSummary: NewsSummary): string {
     return `
-You are preparing a concise developer morning briefing from structured Git repository data and structured weather data.
+Create a concise personal morning briefing from the structured data below.
 
-Produce exactly these two sections in this order:
+OUTPUT EXACTLY THESE FOUR SECTIONS:
 
 ## Project
-
 ## Weather — Bremen
+## News
+## AI News
 
-Project grounding rules:
-- Only use information directly supported by the supplied Git data.
-- Treat each commit as an independent evidence unit.
-- When describing a specific commit, only use its message, body, file lists, fileStats, and supplied totals as evidence.
-- The supplied timestamps are authoritative.
-- Never invent relative dates such as "today", "yesterday", "this morning", or similar phrases.
-- Never claim a timestamp is anomalous, future-dated, or incorrect unless the supplied Git data explicitly says so.
-- Never attribute a file addition from one commit to another commit.
-- If a file was added in an earlier commit and modified in a later commit, distinguish those two events.
-- "addedFiles" means the file itself was created in that commit.
-- "modifiedFiles" means the file already existed and was changed in that commit.
-- "deletedFiles" means the file was deleted in that commit.
-- "renamedFiles" means the file was renamed in that commit.
-- "fileStats" contains per-file additions and deletions from Git numstat.
-- A null additions or deletions value means Git reported a non-numeric value, such as for a binary file.
-- Use filesChanged, additions, and deletions exactly as supplied.
-- Never calculate, estimate, or derive change totals yourself.
-- Line counts indicate change size only.
-- Do not infer importance, complexity, implementation quality, architecture, performance, or user impact from line counts alone.
-- A commit may integrate or use an existing component without creating that component.
-- Do not invent behavior, intent, impact, causes, or technical details that are not explicitly established.
-- Do not infer functionality purely from filenames.
-- Do not infer what vague commit messages mean.
-- If evidence is vague, preserve that uncertainty instead of filling it in.
-- Do not describe something as a refactor unless the commit message explicitly establishes that.
-- Do not describe something as a performance improvement unless the commit message explicitly establishes that.
-- Do not infer causal relationships between separate commits unless their commit messages explicitly establish one.
-- Do not invent that one feature caused later fixes or optimizations.
-- Avoid words such as "major", "robust", "significant", "substantial", or "heavy" unless directly justified by explicit commit wording.
-- Do not include recommendations, offers, follow-up questions, next steps, suggestions, or actions.
-- Do not end with "Would you like me to..." or any similar invitation.
-- Group related commits only when there is clear evidence that they concern the same area of work.
-- When grouping commits, do not mix file changes from one commit into the description of another.
-- Mention features, fixes, optimizations, and repeated areas of work only when explicitly supported by the commit evidence.
-- Prefer a concise thematic morning briefing, not a commit table or changelog.
-- Keep the briefing concise.
-- Avoid repeating the same commit in multiple sections.
-- Mention the current branch and working-tree state.
-- Preserve file paths exactly if you mention them.
-- Do not invent shortened, alternative, or normalized file paths.
-- Do not include a separate raw commit list unless it adds useful information beyond the summary.
+Do not add an introduction, conclusion, key takeaway, recommendations,
+follow-up questions, or additional sections.
 
-Weather grounding rules:
-- Treat the supplied weather values as authoritative.
-- Do not invent weather values.
-- Do not calculate additional meteorological values.
-- Do not change temperatures, wind speeds, or precipitation probabilities.
-- Temperature values are in degrees Celsius, wind speed is in kilometers per hour, and precipitation probability is a percentage.
-- Do not infer an exact time for rain or thunderstorms because the supplied data does not contain hourly timing.
-- Do not claim that rain or a thunderstorm will definitely occur solely from precipitation probability.
-- Distinguish current conditions from today's overall forecast.
-- "currentCondition" describes current conditions.
-- "today.condition" describes the day's overall weather condition.
-- "today.precipitationProbability" is the maximum precipitation probability for the day.
-- Do not confuse precipitation probability with expected rainfall amount.
-- Keep the weather summary concise and practical.
-- A simple interpretation such as "there is a high chance of precipitation" is acceptable when supported by the supplied probability.
-- Do not add detailed safety advice, recommendations, or unsupported predictions.
+GENERAL RULES:
+- Only state facts supported by the supplied data.
+- Do not invent causes, consequences, predictions, technical details, or context.
+- Prefer concise synthesis over repeating the raw input.
 
-Structured Git data:
+PROJECT:
+- Mention the branch and working-tree state.
+- Summarize the main recent development activity.
+- Treat each commit as an independent source of evidence.
+- Do not attribute changes from one commit to another.
+- Do not infer functionality or architecture from filenames.
+- Do not interpret vague commit messages beyond what they state.
+- Use supplied Git statistics exactly; do not calculate totals yourself.
+- Line counts indicate change size only, not importance or quality.
+- Use absolute Git dates when useful; do not invent "today" or "yesterday".
 
+WEATHER:
+- Distinguish current conditions from today's forecast.
+- Use supplied temperatures, wind speed and precipitation probability exactly.
+- Precipitation probability is not rainfall amount.
+- Do not claim precipitation or thunderstorms are guaranteed.
+- Do not invent hourly timing.
+- Keep this section short.
+
+NEWS:
+- Select about 3-4 of the most important general-news candidates.
+- Prioritize broad German, European, international, economic and geopolitical significance.
+- Deprioritize local crime, sports, entertainment and human-interest stories unless they have unusually broad significance.
+- Publication recency alone does not make a story important.
+- Use only the supplied title and summary as factual evidence.
+- Translate both the article title and summary into clear, polished English.
+- Keep the translated title concise and faithful to the original meaning.
+- Summarize each selected item in one concise sentence.
+- Closely paraphrase the supplied summary; do not introduce new causal relationships, motives, interpretations, or stronger claims.
+- Do not invent additional background or predictions.
+- Every selected item MUST include its supplied URL as a Markdown link.
+- Format each item like:
+  - [Translated English title](exact supplied URL) — concise English summary
+
+AI NEWS:
+- Select about 3-5 of the most useful AI-news candidates.
+- Prioritize models, developer tooling, APIs, local/open-weight AI,
+  inference/runtime developments and meaningful research.
+- Use the supplied title and summary as factual evidence.
+- Do not strengthen or embellish the source claims.
+- Summarize each selected item in one concise sentence.
+- Do not simply reproduce the supplied summary verbatim.
+- Keep each item to roughly 1-2 lines of briefing text.
+- Every selected AI item MUST include its supplied URL as a Markdown link.
+- Format each AI item like:
+  - [Article title](exact supplied URL) — concise summary
+- Preserve URLs exactly.
+
+GIT DATA:
 ${JSON.stringify(gitSummary, null, 2)}
 
-Structured weather data:
-
+WEATHER DATA:
 ${JSON.stringify(weatherSummary, null, 2)}
+
+GENERAL NEWS CANDIDATES:
+${JSON.stringify(newsSummary.general, null, 2)}
+
+AI NEWS CANDIDATES:
+${JSON.stringify(newsSummary.ai, null, 2)}
+
+Remember: output exactly ## Project, ## Weather — Bremen, ## News, and ## AI News.
 `;
 }

@@ -16,6 +16,7 @@ export async function summarizeWithOllama(model: string, prompt: string, onToken
             think: false,
             options: {
                 temperature: 0.1,
+                num_ctx: 8192,
             },
         });
 

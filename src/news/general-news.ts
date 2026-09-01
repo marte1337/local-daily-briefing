@@ -14,5 +14,5 @@ const TAGESSCHAU: FeedConfig = {
 export async function getGeneralNews(): Promise<NewsItem[]> {
     const items = await getFeedNews(TAGESSCHAU);
 
-    return deduplicateNews(sortNewestFirst(items)).slice(0, 5);
+    return deduplicateNews(sortNewestFirst(items)).slice(0, 10);
 }
