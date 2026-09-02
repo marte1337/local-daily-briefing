@@ -1,6 +1,6 @@
 import type { GitSummary, NewsSummary, WeatherSummary } from "./types.js";
 
-export function buildDailyBriefingPrompt(gitSummary: GitSummary, weatherSummary: WeatherSummary, newsSummary: NewsSummary): string {
+export function buildDailyBriefingPrompt(gitSummary: GitSummary | null, weatherSummary: WeatherSummary | null, newsSummary: NewsSummary | null): string {
     return `
 Create a concise personal morning briefing from the structured data below.
 
@@ -48,16 +48,16 @@ NEWS:
 - Prioritize broad German, European, international, economic and geopolitical significance.
 - Deprioritize local crime, sports, entertainment and human-interest stories unless they have unusually broad significance.
 - Publication recency alone does not make a story important.
-- Use only the supplied title and summary as factual evidence.
-- Translate BOTH the German article title AND its summary into clear, natural English.
-- Never copy a German article title into the output unless it contains a proper name that should remain unchanged.
-- The Markdown link label MUST be the translated English title, not the original German title.
-- Preserve the supplied URL exactly.
-- Summarize each selected item in one concise English sentence.
-- Closely paraphrase the supplied summary; do not introduce new causal relationships, motives, interpretations, or stronger claims.
+- Use only the supplied title, englishTitle and summary as factual evidence.
+- For the Markdown link label, use the supplied englishTitle EXACTLY.
+- Never use title or summary as the Markdown link label.
+- Do not translate, rewrite, shorten, or otherwise modify englishTitle.
+- Translate and summarize the supplied German summary into one concise English sentence.
+- Do not introduce new causal relationships, motives, interpretations, or stronger claims.
 - Do not invent additional background or predictions.
+- Preserve the supplied URL exactly.
 - Format each item exactly like:
-  - [Translated English title](exact supplied URL) — concise English summary
+  - [englishTitle](exact supplied URL) — concise English summary
 
 AI NEWS:
 - Select about 3-5 of the most useful AI-news candidates.
@@ -74,16 +74,16 @@ AI NEWS:
 - Preserve URLs exactly.
 
 GIT DATA:
-${JSON.stringify(gitSummary, null, 2)}
+${gitSummary ? JSON.stringify(gitSummary, null, 2) : "UNAVAILABLE"}
 
 WEATHER DATA:
-${JSON.stringify(weatherSummary, null, 2)}
+${weatherSummary ? JSON.stringify(weatherSummary, null, 2) : "UNAVAILABLE"}
 
 GENERAL NEWS CANDIDATES:
-${JSON.stringify(newsSummary.general, null, 2)}
+${newsSummary ? JSON.stringify(newsSummary.general, null, 2) : "UNAVAILABLE"}
 
 AI NEWS CANDIDATES:
-${JSON.stringify(newsSummary.ai, null, 2)}
+${newsSummary ? JSON.stringify(newsSummary.ai, null, 2) : "UNAVAILABLE"}
 
 Remember: output exactly ## Project, ## Weather — Bremen, ## News, and ## AI News.
 `;

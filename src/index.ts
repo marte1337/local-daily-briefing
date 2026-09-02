@@ -1,6 +1,7 @@
 import { getGitSummary } from "./git.js";
 import { getWeatherSummary } from "./weather.js";
 import { getNews } from "./news/index.js";
+import { translateNewsTitles } from "./news/translate-news.js";
 import { summarizeWithOllama } from "./ollama.js";
 import { buildDailyBriefingPrompt } from "./prompt.js";
 
@@ -15,7 +16,24 @@ async function main() {
     console.log(`Collecting Git activity from: ${repoPath}`);
     console.log(`Model: ${model}`);
 
-    const [gitSummary, weatherSummary, newsSummary] = await Promise.all([getGitSummary(repoPath, "7 days ago"), getWeatherSummary(), getNews()]);
+    const [gitSummary, weatherSummary, rawNewsSummary] = await Promise.all([
+        safeCollect("Git activity", () => getGitSummary(repoPath, "7 days ago")),
+        safeCollect("weather", () => getWeatherSummary()),
+        safeCollect("news", () => getNews()),
+    ]);
+
+    let newsSummary = rawNewsSummary;
+
+    if (rawNewsSummary) {
+        const translatedGeneralNews = await safeCollect("news title translation", () => translateNewsTitles(rawNewsSummary.general, model));
+
+        if (translatedGeneralNews) {
+            newsSummary = {
+                ...rawNewsSummary,
+                general: translatedGeneralNews,
+            };
+        }
+    }
 
     console.log("\n=== Structured Git Data ===\n");
     console.log(JSON.stringify(gitSummary, null, 2));
@@ -42,3 +60,12 @@ main().catch((error) => {
     console.error(error);
     process.exit(1);
 });
+
+async function safeCollect<T>(label: string, collector: () => Promise<T>): Promise<T | null> {
+    try {
+        return await collector();
+    } catch (error) {
+        console.error(`Failed to collect ${label}:`, error);
+        return null;
+    }
+}

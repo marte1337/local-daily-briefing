@@ -59,6 +59,7 @@ export type WeatherSummary = {
 
 export type NewsItem = {
     title: string;
+    englishTitle?: string;
     source: string;
     url: string;
     publishedAt: string | null;
