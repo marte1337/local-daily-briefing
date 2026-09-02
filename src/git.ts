@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { basename } from "node:path";
-import type { FileChangeStat, GitCommit, GitSummary } from "./types.js";
+import type { ActiveBranch, FileChangeStat, GitCommit, GitSummary } from "./types.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -198,12 +198,70 @@ async function getRecentCommits(repoPath: string, since: string): Promise<GitCom
     return commits;
 }
 
-export async function getGitSummary(repoPath: string, since = "7 days ago"): Promise<GitSummary> {
+async function refreshRemoteBranches(repoPath: string): Promise<void> {
+    try {
+        await git(repoPath, ["fetch", "--prune", "origin"]);
+    } catch {
+        console.warn("Could not refresh remote Git branches. Using cached remote data.");
+    }
+}
+
+async function getActiveBranches(repoPath: string, since: string): Promise<ActiveBranch[]> {
+    const output = await git(repoPath, ["for-each-ref", "refs/remotes/origin", "--no-merged=origin/main", "--format=%(refname:short)"]);
+
+    if (!output) {
+        return [];
+    }
+
+    const branchNames = output
+        .split(/\r?\n/)
+        .map((branch) => branch.trim())
+        .filter(Boolean)
+        .filter((branch) => branch !== "origin/main" && branch !== "origin/HEAD");
+
+    const activeBranches: ActiveBranch[] = [];
+
+    for (const branchName of branchNames) {
+        const latestCommit = await git(repoPath, ["log", "-1", `--since=${since}`, "--format=%an%x1f%aI%x1f%s", `origin/main..${branchName}`]);
+
+        if (!latestCommit) {
+            continue;
+        }
+
+        const [author, lastCommitDate, lastCommitMessage] = latestCommit.split("\x1f");
+
+        const commitsAheadOutput = await git(repoPath, ["rev-list", "--count", `origin/main..${branchName}`]);
+
+        const commitsAhead = Number.parseInt(commitsAheadOutput, 10);
+
+        activeBranches.push({
+            name: branchName.replace(/^origin\//, ""),
+            author,
+            lastCommitDate,
+            lastCommitMessage,
+            commitsAhead,
+        });
+    }
+
+    return activeBranches.sort((a, b) => Date.parse(b.lastCommitDate) - Date.parse(a.lastCommitDate));
+}
+
+export async function getGitSummary(repoPath: string, since = "1 day ago", branchSince = "1 day ago"): Promise<GitSummary> {
+    await refreshRemoteBranches(repoPath);
+
     const branch = await git(repoPath, ["rev-parse", "--abbrev-ref", "HEAD"]);
 
     const status = await git(repoPath, ["status", "--short"]);
 
     const commits = await getRecentCommits(repoPath, since);
+
+    let activeBranches: ActiveBranch[] = [];
+
+    try {
+        activeBranches = await getActiveBranches(repoPath, branchSince);
+    } catch {
+        console.warn("Could not inspect active remote branches.");
+    }
 
     const unstagedDiff = await git(repoPath, ["diff", "--stat"]);
 
@@ -214,6 +272,7 @@ export async function getGitSummary(repoPath: string, since = "7 days ago"): Pro
         branch,
         workingTree: status || "Clean",
         commits,
+        activeBranches,
         unstagedDiff: unstagedDiff || "None",
         stagedDiff: stagedDiff || "None",
     };

@@ -34,11 +34,20 @@ export type GitCommit = {
     otherChanges: OtherFileChange[];
 };
 
+export type ActiveBranch = {
+    name: string;
+    author: string;
+    lastCommitDate: string;
+    lastCommitMessage: string;
+    commitsAhead: number;
+};
+
 export type GitSummary = {
     repository: string;
     branch: string;
     workingTree: string;
     commits: GitCommit[];
+    activeBranches: ActiveBranch[];
     unstagedDiff: string;
     stagedDiff: string;
 };
