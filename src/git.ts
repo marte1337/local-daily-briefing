@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { basename } from "node:path";
 import type { FileChangeStat, GitCommit, GitSummary } from "./types.js";
 
 const execFileAsync = promisify(execFile);
@@ -209,7 +210,7 @@ export async function getGitSummary(repoPath: string, since = "7 days ago"): Pro
     const stagedDiff = await git(repoPath, ["diff", "--cached", "--stat"]);
 
     return {
-        repository: repoPath,
+        repository: basename(repoPath),
         branch,
         workingTree: status || "Clean",
         commits,

@@ -6,9 +6,9 @@ Create a concise personal morning briefing from the structured data below.
 
 OUTPUT EXACTLY THESE FOUR SECTIONS:
 
-## Project
-## Weather — Bremen
-## News
+## Next Project
+## Weather in Bremen
+## General News
 ## AI News
 
 Do not add an introduction, conclusion, key takeaway, recommendations,
@@ -44,7 +44,7 @@ WEATHER:
 - Keep this section short.
 
 NEWS:
-- Select about 3-4 of the most important general-news candidates.
+- Select about 4-5 of the most important general-news candidates.
 - Prioritize broad German, European, international, economic and geopolitical significance.
 - Deprioritize local crime, sports, entertainment and human-interest stories unless they have unusually broad significance.
 - Publication recency alone does not make a story important.
@@ -60,7 +60,7 @@ NEWS:
   - [englishTitle](exact supplied URL) — concise English summary
 
 AI NEWS:
-- Select about 3-5 of the most useful AI-news candidates.
+- Select about 4-5 of the most useful AI-news candidates.
 - Prioritize models, developer tooling, APIs, local/open-weight AI,
   inference/runtime developments and meaningful research.
 - Use the supplied title and summary as factual evidence.
