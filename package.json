@@ -11,15 +11,14 @@
   "description": "",
   "devDependencies": {
     "@types/node": "^26.2.0",
-    "@types/nodemailer": "^8.0.1",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@azure/msal-node": "^6.0.0",
     "cheerio": "^1.2.0",
     "dotenv": "^17.4.2",
     "marked": "^18.0.11",
-    "nodemailer": "^9.1.1",
     "rss-parser": "^3.13.0"
   }
 }

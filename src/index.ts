@@ -1,9 +1,11 @@
+import "dotenv/config";
 import { getGitSummary } from "./git.js";
 import { getWeatherSummary } from "./weather.js";
 import { getNews } from "./news/index.js";
 import { translateNewsTitles } from "./news/translate-news.js";
 import { summarizeWithOllama } from "./ollama.js";
 import { buildDailyBriefingPrompt } from "./prompt.js";
+import { sendBriefing } from "./mail.js";
 
 async function main() {
     const repoPath = process.argv[2];
@@ -52,8 +54,7 @@ async function main() {
 
     console.log();
 
-    // Later we'll use this for email delivery.
-    void briefing;
+    await sendBriefing(briefing);
 }
 
 main().catch((error) => {
