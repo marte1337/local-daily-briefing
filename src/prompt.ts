@@ -24,7 +24,7 @@ LANGUAGE:
 - Translate any German source text into natural English.
 - Proper names, company names, product names, and URLs must not be translated.
 
-PROJECT:
+NEXT PROJECT:
 - Mention the branch and working-tree state.
 - Summarize the main recent development activity.
 - Treat each commit as an independent source of evidence.
@@ -43,7 +43,7 @@ WEATHER:
 - Do not invent hourly timing.
 - Keep this section short.
 
-NEWS:
+GENERAL NEWS:
 - Select about 4-5 of the most important general-news candidates.
 - Prioritize broad German, European, international, economic and geopolitical significance.
 - Deprioritize local crime, sports, entertainment and human-interest stories unless they have unusually broad significance.
