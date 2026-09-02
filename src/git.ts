@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { basename } from "node:path";
-import type { ActiveBranch, FileChangeStat, GitCommit, GitSummary } from "./types.js";
+import type { ActiveBranch, ActiveBranchCommit, FileChangeStat, GitCommit, GitSummary } from "./types.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -198,6 +198,25 @@ async function getRecentCommits(repoPath: string, since: string): Promise<GitCom
     return commits;
 }
 
+async function getUnmergedBranchCommits(repoPath: string, branchName: string, limit = 5): Promise<ActiveBranchCommit[]> {
+    const output = await git(repoPath, ["log", "--no-merges", `-${limit}`, "--format=%h%x1f%an%x1f%aI%x1f%s", `origin/main..${branchName}`]);
+
+    if (!output) {
+        return [];
+    }
+
+    return output.split(/\r?\n/).map((line) => {
+        const [hash, author, date, message] = line.split("\x1f");
+
+        return {
+            hash,
+            author,
+            date,
+            message,
+        };
+    });
+}
+
 async function refreshRemoteBranches(repoPath: string): Promise<void> {
     try {
         await git(repoPath, ["fetch", "--prune", "origin"]);
@@ -234,12 +253,15 @@ async function getActiveBranches(repoPath: string, since: string): Promise<Activ
 
         const commitsAhead = Number.parseInt(commitsAheadOutput, 10);
 
+        const unmergedCommits = await getUnmergedBranchCommits(repoPath, branchName);
+
         activeBranches.push({
             name: branchName.replace(/^origin\//, ""),
             author,
             lastCommitDate,
             lastCommitMessage,
             commitsAhead,
+            unmergedCommits,
         });
     }
 

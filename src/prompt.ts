@@ -1,90 +1,132 @@
 import type { GitSummary, NewsSummary, WeatherSummary } from "./types.js";
 
 export function buildDailyBriefingPrompt(gitSummary: GitSummary | null, weatherSummary: WeatherSummary | null, newsSummary: NewsSummary | null): string {
+    const gitData = gitSummary
+        ? {
+              repository: gitSummary.repository,
+              branch: gitSummary.branch,
+              workingTree: gitSummary.workingTree,
+
+              commits: gitSummary.commits.map((commit) => ({
+                  hash: commit.hash,
+                  author: commit.author,
+                  date: commit.date,
+                  message: commit.message,
+                  body: commit.body || undefined,
+                  addedFiles: commit.addedFiles,
+                  modifiedFiles: commit.modifiedFiles,
+                  deletedFiles: commit.deletedFiles,
+                  renamedFiles: commit.renamedFiles,
+                  filesChanged: commit.filesChanged,
+                  additions: commit.additions,
+                  deletions: commit.deletions,
+              })),
+
+              activeBranches: gitSummary.activeBranches.map((branch) => ({
+                  name: branch.name,
+                  commitsAhead: branch.commitsAhead,
+                  lastCommitDate: branch.lastCommitDate,
+                  author: branch.author,
+                  unmergedCommits: branch.unmergedCommits,
+              })),
+
+              unstagedDiff: gitSummary.unstagedDiff,
+              stagedDiff: gitSummary.stagedDiff,
+          }
+        : null;
+
+    const generalNewsData = newsSummary
+        ? newsSummary.general.map((item) => ({
+              englishTitle: item.englishTitle ?? item.title,
+              url: item.url,
+              summary: item.summary,
+          }))
+        : null;
+
+    const aiNewsData = newsSummary
+        ? newsSummary.ai.map((item) => ({
+              title: item.title,
+              url: item.url,
+              summary: item.summary,
+              section: item.section,
+          }))
+        : null;
+
+    console.log("\n=== JSON Data ===\n");
+    console.log(gitData, weatherSummary, generalNewsData, aiNewsData);
+
     return `
-Create a concise personal morning briefing from the structured data below.
+Create a concise English morning briefing using only the supplied data.
 
-OUTPUT EXACTLY THESE FOUR SECTIONS:
+OUTPUT EXACTLY:
 
-## Next Project
+## Next.js Project
+### Main branch
+### Active unmerged branches
+
 ## Weather in Bremen
+
 ## General News
+
 ## AI News
 
-Do not add an introduction, conclusion, key takeaway, recommendations,
-follow-up questions, or additional sections.
+Do not add an introduction, conclusion, key takeaway, recommendations, or questions.
 
-GENERAL RULES:
-- Only state facts supported by the supplied data.
-- Do not invent causes, consequences, predictions, technical details, or context.
-- Prefer concise synthesis over repeating the raw input.
+GENERAL:
+- Use only facts supported by the supplied data.
+- Do not invent causes, consequences, technical details, or predictions.
+- Keep the briefing concise but informative.
+- If data for a section is UNAVAILABLE, say so briefly and continue.
 
-LANGUAGE:
-- Write all visible briefing text in English.
-- Translate any German source text into natural English.
-- Proper names, company names, product names, and URLs must not be translated.
-
-NEXT PROJECT:
-- Mention the branch and working-tree state.
-- Summarize the main recent development activity.
-- Treat each commit as an independent source of evidence.
-- Do not attribute changes from one commit to another.
-- Do not infer functionality or architecture from filenames.
-- Do not interpret vague commit messages beyond what they state.
-- Use supplied Git statistics exactly; do not calculate totals yourself.
-- Line counts indicate change size only, not importance or quality.
-- Use absolute Git dates when useful; do not invent "today" or "yesterday".
+PROJECT:
+- Keep main-branch work and unmerged remote-branch work clearly separate.
+- For Main branch, state repository, branch and working-tree state, then summarize recent work by topic.
+- Group related commits, but keep unrelated work distinct.
+- Mention components/files when useful.
+- Treat each commit independently and do not infer behavior from filenames alone.
+- Supplied Git statistics are authoritative; do not calculate new totals.
+- For each active branch, mention its name, commits ahead of main, and summarize its unmerged commits.
+- Do not describe unmerged branch work as already present on main.
+- Do not infer whether a branch is finished, approved, abandoned, or ready to merge.
+- If there are no active branches, say so.
 
 WEATHER:
+- windSpeed is measured in km/h.
+- Temperatures are measured in °C.
 - Distinguish current conditions from today's forecast.
-- Use supplied temperatures, wind speed and precipitation probability exactly.
+- Use supplied values exactly.
 - Precipitation probability is not rainfall amount.
-- Do not claim precipitation or thunderstorms are guaranteed.
-- Do not invent hourly timing.
+- Do not invent hourly timing or guarantee precipitation.
 - Keep this section short.
 
 GENERAL NEWS:
-- Select about 4-5 of the most important general-news candidates.
-- Prioritize broad German, European, international, economic and geopolitical significance.
-- Deprioritize local crime, sports, entertainment and human-interest stories unless they have unusually broad significance.
-- Publication recency alone does not make a story important.
-- Use only the supplied title, englishTitle and summary as factual evidence.
-- For the Markdown link label, use the supplied englishTitle EXACTLY.
-- Never use title or summary as the Markdown link label.
-- Do not translate, rewrite, shorten, or otherwise modify englishTitle.
-- Translate and summarize the supplied German summary into one concise English sentence.
-- Do not introduce new causal relationships, motives, interpretations, or stronger claims.
-- Do not invent additional background or predictions.
+- Select 4-5 of the most important candidates.
+- Prioritize significant German, European, international, economic and geopolitical stories.
+- Deprioritize sports, entertainment, local crime and human-interest stories unless broadly significant.
+- Use englishTitle EXACTLY as the Markdown link label.
+- Translate/summarize the supplied German summary into one concise English sentence.
 - Preserve the supplied URL exactly.
-- Format each item exactly like:
-  - [englishTitle](exact supplied URL) — concise English summary
+- Format:
+  - [englishTitle](URL) — concise English summary
 
 AI NEWS:
-- Select about 4-5 of the most useful AI-news candidates.
-- Prioritize models, developer tooling, APIs, local/open-weight AI,
-  inference/runtime developments and meaningful research.
-- Use the supplied title and summary as factual evidence.
-- Do not strengthen or embellish the source claims.
-- Summarize each selected item in one concise sentence.
-- Do not simply reproduce the supplied summary verbatim.
-- Keep each item to roughly 1-2 lines of briefing text.
-- Every selected AI item MUST include its supplied URL as a Markdown link.
-- Format each AI item like:
-  - [Article title](exact supplied URL) — concise summary
-- Preserve URLs exactly.
+- Select 4-5 of the most useful candidates.
+- Prioritize models, developer tooling, APIs, local/open-weight AI, inference and meaningful research.
+- Summarize each item in one concise sentence without strengthening the source claim.
+- Preserve the supplied title and URL.
+- Format:
+  - [Article title](URL) — concise summary
 
 GIT DATA:
-${gitSummary ? JSON.stringify(gitSummary, null, 2) : "UNAVAILABLE"}
+${gitData ? JSON.stringify(gitData) : "UNAVAILABLE"}
 
 WEATHER DATA:
-${weatherSummary ? JSON.stringify(weatherSummary, null, 2) : "UNAVAILABLE"}
+${weatherSummary ? JSON.stringify(weatherSummary) : "UNAVAILABLE"}
 
 GENERAL NEWS CANDIDATES:
-${newsSummary ? JSON.stringify(newsSummary.general, null, 2) : "UNAVAILABLE"}
+${generalNewsData ? JSON.stringify(generalNewsData) : "UNAVAILABLE"}
 
 AI NEWS CANDIDATES:
-${newsSummary ? JSON.stringify(newsSummary.ai, null, 2) : "UNAVAILABLE"}
-
-Remember: output exactly ## Project, ## Weather — Bremen, ## News, and ## AI News.
+${aiNewsData ? JSON.stringify(aiNewsData) : "UNAVAILABLE"}
 `;
 }
