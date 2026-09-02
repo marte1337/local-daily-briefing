@@ -82,6 +82,7 @@ PROJECT:
 - Keep main-branch work and unmerged remote-branch work clearly separate.
 - For Main branch, state repository, branch and working-tree state, then summarize recent work by topic.
 - Group related commits, but keep unrelated work distinct.
+- Never calculate combined commit counts, file counts, additions, or deletions across multiple commits.
 - Mention components/files when useful.
 - Treat each commit independently and do not infer behavior from filenames alone.
 - Supplied Git statistics are authoritative; do not calculate new totals.
