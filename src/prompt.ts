@@ -19,6 +19,11 @@ GENERAL RULES:
 - Do not invent causes, consequences, predictions, technical details, or context.
 - Prefer concise synthesis over repeating the raw input.
 
+LANGUAGE:
+- Write all visible briefing text in English.
+- Translate any German source text into natural English.
+- Proper names, company names, product names, and URLs must not be translated.
+
 PROJECT:
 - Mention the branch and working-tree state.
 - Summarize the main recent development activity.
@@ -44,13 +49,14 @@ NEWS:
 - Deprioritize local crime, sports, entertainment and human-interest stories unless they have unusually broad significance.
 - Publication recency alone does not make a story important.
 - Use only the supplied title and summary as factual evidence.
-- Translate both the article title and summary into clear, polished English.
-- Keep the translated title concise and faithful to the original meaning.
-- Summarize each selected item in one concise sentence.
+- Translate BOTH the German article title AND its summary into clear, natural English.
+- Never copy a German article title into the output unless it contains a proper name that should remain unchanged.
+- The Markdown link label MUST be the translated English title, not the original German title.
+- Preserve the supplied URL exactly.
+- Summarize each selected item in one concise English sentence.
 - Closely paraphrase the supplied summary; do not introduce new causal relationships, motives, interpretations, or stronger claims.
 - Do not invent additional background or predictions.
-- Every selected item MUST include its supplied URL as a Markdown link.
-- Format each item like:
+- Format each item exactly like:
   - [Translated English title](exact supplied URL) — concise English summary
 
 AI NEWS:
